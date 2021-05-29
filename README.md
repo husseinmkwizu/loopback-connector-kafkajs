@@ -1,6 +1,5 @@
 # loopback-connector-kafkajs
 
-========
 Kafka connector for loopback-datasource-juggler.
 
 ## Install

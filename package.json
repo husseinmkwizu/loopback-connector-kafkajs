@@ -1,0 +1,43 @@
+{
+  "name": "loopback-connector-kafkajs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npm run clean && tsc",
+    "prepare": "npm run build",
+    "clean": "rimraf dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/husseinmkwizu/loopback-connector-kafkajs.git"
+  },
+  "keywords": [
+    "loopback",
+    "connector",
+    "kafka",
+    "kafkajs",
+    "typescript",
+    "typescript",
+    "library"
+  ],
+  "author": "Hussein Mkwizu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/husseinmkwizu/loopback-connector-kafkajs/issues"
+  },
+  "homepage": "https://github.com/husseinmkwizu/loopback-connector-kafkajs#readme",
+  "dependencies": {
+    "kafka-node": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^15.6.1",
+    "typescript": "^4.3.2",
+    "rimraf": "^3.0.2"
+  }
+}

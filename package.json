@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/husseinmkwizu/loopback-connector-kafkajs#readme",
   "dependencies": {
-    "kafka-node": "^5.0.0"
+    "kafkajs": "^1.15.0"
   },
   "devDependencies": {
     "@types/node": "^15.6.1",

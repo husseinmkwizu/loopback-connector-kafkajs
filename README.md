@@ -12,7 +12,7 @@ npm install loopback-connector-kafkajs --save
 
 ```js
 var DataSource = require("loopback-datasource-juggler").DataSource;
-// The options for kafka-node
+// The options for kafkajs
 var options = {
   host: "127.0.0.1:9092",
 };

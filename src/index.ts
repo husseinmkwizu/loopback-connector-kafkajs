@@ -1,38 +1,37 @@
-"use strict";
-
-var kafka = require("kafka-node");
-var Client = kafka.KafkaClient;
-var Producer = kafka.HighLevelProducer;
+import { Kafka, logLevel, ProducerRecord } from 'kafkajs'
 
 exports.initialize = function (dataSource, cb) {
     var settings = dataSource.settings;
-    const { debug } = settings
+    const { debug, host } = settings
     if (debug) {
         console.log("KAFKAJS -- INITIALIZE CALLED")
     }
 
-    const client = new Client({
-        kafkaHost: settings?.host,
-        reconnectOnIdle: true,
-        autoConnect: true,
-        idleConnection: 300000,
+    //brokers
+    let brokers = null
+    if (typeof host === 'string') {
+        brokers = host.split(",")
+    }
+
+    const kafka = new Kafka({
+        clientId: settings?.clientId ?? 'kafkajs-producer',
+        brokers: brokers,
         sasl: settings?.sasl,
-        sslOptions: settings?.sslOptions
+        ssl: settings?.ssl,
+        retry: settings?.retry,
+        logLevel: debug ? logLevel.DEBUG : logLevel.NOTHING
     });
 
-    var producer = new Producer(client);
-    producer.on("ready", function () {
-        console.log("Producer ready");
-    });
+    const producer = kafka.producer();
 
-    producer.on("error", function (error) {
-        console.log("An error occured", error);
-    });
-    var connector = new Kafka(producer, { debug });
+    producer.connect()
+        .then(() => { console.log("Producer ready "); })
+
+    var connector = new KafkaConnector(producer, { debug });
     dataSource.connector = connector;
     connector.DataAccessObject = function () { };
-    for (var m in Kafka.prototype) {
-        var method = Kafka.prototype[m];
+    for (var m in KafkaConnector.prototype) {
+        var method = KafkaConnector.prototype[m];
         if ("function" === typeof method) {
             connector.DataAccessObject[m] = method.bind(connector);
             for (var k in method) {
@@ -48,36 +47,25 @@ exports.initialize = function (dataSource, cb) {
  *  Constructor for KAFKA connector
  *  @param {Object} The kafka-node producer
  */
-function Kafka(producer, options) {
+function KafkaConnector(producer, options) {
     this.name = "kafka";
     this._models = {};
     this.producer = producer;
     this.options = options
 }
 
-Kafka.prototype.send = function (topic, messages, cb) {
+KafkaConnector.prototype.send = function (payload: ProducerRecord, cb) {
     const { debug } = this.options
     if (debug) {
         console.log("KAFKAJS -- SEND CALLED")
     }
-    var producer = this.producer;
-    var stringify = function (json) {
-        return typeof json === "string" ? json : JSON.stringify(json);
-    };
-    messages = Array.isArray(messages)
-        ? messages.map(function (item) {
-            return stringify(item);
-        })
-        : stringify(messages);
-    producer.send(
-        [
-            {
-                topic: topic,
-                messages: messages,
-            },
-        ],
-        cb
-    );
+
+    this.producer.send(payload)
+        .then(response => {
+            cb(null, response)
+        }).catch(error => {
+            cb(error, null)
+        });
 };
 
 function setRemoting(fn, options) {
@@ -90,19 +78,13 @@ function setRemoting(fn, options) {
     fn.shared = true;
 }
 
-setRemoting(Kafka.prototype.send, {
+setRemoting(KafkaConnector.prototype.send, {
     description: "Send a message to Kafka server",
     accepts: [
         {
-            arg: "topic",
-            type: "String",
-            description: "Topic name",
-            http: { source: "query" },
-        },
-        {
-            arg: "messages",
+            arg: "payload",
             type: "object",
-            description: "Message body",
+            description: "Message payload",
             http: { source: "body" },
         },
     ],

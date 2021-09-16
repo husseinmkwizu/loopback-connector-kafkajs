@@ -22,11 +22,11 @@ exports.initialize = function (dataSource, cb) {
   const producer = kafka.producer();
 
   if (debug) {
-    this.producer.logger().info("KAFKAJS -- Calling producer.connect");
+    producer.logger().info("KAFKAJS -- Calling producer.connect");
   }
 
   producer.connect().then(() => {
-    this.producer.logger().info("KAFKAJS -- Producer ready ");
+    producer.logger().info("KAFKAJS -- Producer ready ");
   });
 
   var connector = new KafkaConnector(producer, { debug });
